@@ -1,0 +1,58 @@
+import java.util.*;
+
+public class Main {
+
+    static Map<String, List<String>> tree = new HashMap<>();
+    static Map<String, Integer> h = new HashMap<>();
+
+    static void buildGraph() {
+        tree.put("R", Arrays.asList("A", "B"));
+        tree.put("A", Arrays.asList("C", "D"));
+        tree.put("B", Arrays.asList("E", "F"));
+        tree.put("C", new ArrayList<>());
+        tree.put("D", new ArrayList<>());
+        tree.put("E", new ArrayList<>());
+        tree.put("F", new ArrayList<>());
+
+        h.put("R", 5); h.put("A", 4); h.put("B", 2);
+        h.put("C", 5); h.put("D", 4); h.put("E", 0); h.put("F", 3);
+    }
+
+    static void bestFirstSearch(String start, String goal) {
+        List<String> START = new ArrayList<>();    
+        START.add(start);
+        Map<String, String> parent = new HashMap<>(); 
+        parent.put(start, null);
+        List<String> visited = new ArrayList<>();
+
+        while (!START.isEmpty()) {                  
+            String A = START.remove(0);             
+            visited.add(A);
+            System.out.println("Expanding node " + A + "  (h = " + h.get(A) + ")");
+
+            if (A.equals(goal)) {                  
+                LinkedList<String> path = new LinkedList<>();
+                for (String n = A; n != null; n = parent.get(n)) {
+                    path.addFirst(n);                
+                }
+                System.out.println("\nOrder visited: " + String.join(" -> ", visited));
+                System.out.println("Path found   : " + String.join(" -> ", path));
+                return;
+            }
+
+            for (String child : tree.get(A)) {
+                parent.put(child, A);
+                START.add(child);
+            }
+
+            START.sort(Comparator.comparingInt(n -> h.get(n)));
+            System.out.println("   START list now: " + START);
+        }
+        System.out.println("No solution");          
+    }
+
+    public static void main(String[] args) {
+        buildGraph();
+        bestFirstSearch("R", "E");
+    }
+}

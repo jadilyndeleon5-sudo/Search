@@ -1,0 +1,82 @@
+import java.util.*;
+
+public class Main {
+
+    static class Edge {
+        String to; int cost;
+        Edge(String to, int cost) { this.to = to; this.cost = cost; }
+    }
+
+    static class Entry {
+        String node; int g, f, order;
+        Entry(String node, int g, int f, int order) {
+            this.node = node; this.g = g; this.f = f; this.order = order;
+        }
+    }
+
+    static Map<String, List<Edge>> graph = new HashMap<>();
+    static Map<String, Integer> h = new HashMap<>();
+
+    static void buildGraph() {
+        graph.put("R", Arrays.asList(new Edge("A", 2), new Edge("B", 4)));
+        graph.put("A", Arrays.asList(new Edge("C", 3), new Edge("D", 1)));
+        graph.put("B", Arrays.asList(new Edge("E", 2), new Edge("F", 5)));
+        graph.put("C", new ArrayList<>());
+        graph.put("D", new ArrayList<>());
+        graph.put("E", new ArrayList<>());
+        graph.put("F", new ArrayList<>());
+
+        h.put("R", 5); h.put("A", 4); h.put("B", 2);
+        h.put("C", 5); h.put("D", 4); h.put("E", 0); h.put("F", 3);
+    }
+
+    static void aStarSearch(String start, String goal) {
+        PriorityQueue<Entry> frontier = new PriorityQueue<>(
+            (a, b) -> a.f != b.f ? Integer.compare(a.f, b.f) : Integer.compare(a.order, b.order));
+        Map<String, String> parent = new HashMap<>();
+        Map<String, Integer> bestG = new HashMap<>();  
+        List<String> expanded = new ArrayList<>();
+        int counter = 0;
+
+        frontier.add(new Entry(start, 0, h.get(start), counter));
+        parent.put(start, null);
+        bestG.put(start, 0);
+
+        while (!frontier.isEmpty()) {
+            Entry cur = frontier.poll();             
+            expanded.add(cur.node);
+            System.out.println("Expanding " + cur.node + ":  g = " + cur.g
+                    + ", h = " + h.get(cur.node) + ", f = " + cur.f);
+
+            if (cur.node.equals(goal)) {               
+                LinkedList<String> path = new LinkedList<>();
+                for (String n = cur.node; n != null; n = parent.get(n)) {
+                    path.addFirst(n);
+                }
+                System.out.println("\nOrder expanded: " + String.join(" -> ", expanded));
+                System.out.println("Path found    : " + String.join(" -> ", path));
+                System.out.println("Total cost    : " + cur.g);
+                return;
+            }
+
+            for (Edge e : graph.get(cur.node)) {
+                int newG = cur.g + e.cost;            
+                if (!bestG.containsKey(e.to) || newG < bestG.get(e.to)) {
+                    bestG.put(e.to, newG);
+                    parent.put(e.to, cur.node);
+                    counter++;
+                    int newF = newG + h.get(e.to);    
+                    frontier.add(new Entry(e.to, newG, newF, counter));
+                    System.out.println("   added " + e.to + ": g = " + newG
+                            + ", h = " + h.get(e.to) + ", f = " + newF);
+                }
+            }
+        }
+        System.out.println("No solution");          
+    }
+
+    public static void main(String[] args) {
+        buildGraph();
+        aStarSearch("R", "E");
+    }
+}
